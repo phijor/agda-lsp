@@ -3,6 +3,7 @@
 import Benchmarks (generateAgdaData, generateMyCheckData)
 import Control.Monad.IO.Class (MonadIO (liftIO))
 import Data.IORef (newIORef)
+import Data.Text (pack)
 import Handlers (handlers)
 import Language.LSP.Protocol.Types
   ( SaveOptions (SaveOptions),
@@ -12,7 +13,7 @@ import Language.LSP.Protocol.Types
   )
 import Language.LSP.Protocol.Types qualified as LSP
 import Language.LSP.Server
-import ScopeAnalysisTests qualified as ScopeAnalysisTests
+import ScopeAnalysisTests qualified
 import State (emptyState)
 import System.Environment (getArgs)
 
@@ -29,10 +30,12 @@ main = do
       _ <-
         runServer $
           ServerDefinition
-            { onConfigurationChange = \_ _ -> pure (),
-              defaultConfig = (),
+            { defaultConfig = (),
+              configSection = pack "agda-lsp",
+              parseConfig = \config _new -> Right config,
+              onConfigChange = \_ -> pure (),
               doInitialize = \env _req -> pure $ Right env,
-              staticHandlers = handlers state,
+              staticHandlers = \_ -> handlers state,
               interpretHandler = \env -> Iso (runLspT env) liftIO,
               options =
                 defaultOptions
