@@ -14,7 +14,7 @@ import Language.LSP.Protocol.Types
 import Language.LSP.Protocol.Types qualified as LSP
 import Language.LSP.Server
 import ScopeAnalysisTests qualified
-import State (emptyState)
+import State (initState)
 import System.Environment (getArgs)
 
 data ScopeTree = ScopeLeaf LSP.Range | ScopeTree LSP.Range [ScopeTree] deriving (Show)
@@ -26,7 +26,7 @@ main = do
     ["run"] -> handleRun
     ["test"] -> handleTest
     _ -> do
-      state <- newIORef emptyState
+      state <- newIORef =<< initState
       _ <-
         runServer $
           ServerDefinition

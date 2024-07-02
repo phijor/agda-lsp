@@ -1,6 +1,7 @@
-module ScopeImport (State, emptyState, resolveAllModules) where
+module ScopeImport (State, emptyState, setLibrariesFile, resolveAllModules) where
 import Agda.Syntax.Scope.Base
 import Agda.Interaction.Options qualified as AO
+import Agda.Interaction.Options.Lenses qualified as AO (LensCommandLineOptions(..))
 import Scope
 import ScopeMap qualified as SMap
 import Agda.Compiler.Backend
@@ -47,6 +48,15 @@ getTCS (State x _ _) = x
 
 setTCS :: TCState -> State -> State
 setTCS x (State _ a b) = State x a b
+
+setLibrariesFile :: FilePath -> State -> State
+setLibrariesFile librariesFilePath state =
+  let tcs = getTCS state
+      newtcs = AO.mapCommandLineOptions setLibrariesFilePath tcs
+  in setTCS newtcs state
+  where
+    setLibrariesFilePath :: AO.CommandLineOptions -> AO.CommandLineOptions
+    setLibrariesFilePath opts = opts { AO.optOverrideLibrariesFile = Just librariesFilePath }
 
 scopeOfSym :: Symbol -> Scope.Scope
 scopeOfSym (Symbol _ _ _ (Scope.SModl _ (Scope.Modl m))) = m
